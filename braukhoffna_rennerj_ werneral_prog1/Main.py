@@ -1,6 +1,8 @@
 import itertools
 from tkinter import *
 import random
+from tkinter import messagebox
+import time
 
 
 class puzzle:
@@ -24,16 +26,22 @@ class puzzle:
             self.vals[x][y] = i
 
         # Check Solvability
-        # Algorithm from https://math.stackexchange.com/questions/293527/how-to-check-if-a-8-puzzle-is-solvable
-        inversions = 0
-        flat = list(itertools.chain.from_iterable(self.vals))
-        for i in range(len(flat)):
-            if flat[i] != 0:
-                for j in range(i + 1, len(flat)):
-                    if flat[j] != 0 and flat[i] > flat[j]:
-                        inversions += 1
-        if inversions % 2 == 1:
+        if not check_solvable(self.vals):
             self.new_grid()
+
+    def specific_grid(self, grid_vals):
+        vals = [int(i) for i in list(grid_vals)]
+        digits = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+        if not (all(elem in vals for elem in digits) and len(vals) == len(digits)):
+            messagebox.showinfo("Error", "Invalid input.")
+            raise Exception('Invalid Input')
+        self.vals = [x[:] for x in [[0] * 3] * 3]
+        for i, j in itertools.product(range(3), repeat=2):
+            self.vals[i][j] = vals[i * 3 + j]
+        if not check_solvable(self.vals):
+            messagebox.showinfo("Error", "Puzzle is not solvable from that state.")
+            raise Exception('Invalid Input')
+
 
 
 def main():
@@ -53,7 +61,8 @@ def main():
     file_menu = Menu(menu)
     menu.add_cascade(label='Grid', menu=file_menu)
     file_menu.add_command(label='Reset', command=lambda: reset(grid, btns))
-    file_menu.add_command(label='Random Board', command=lambda: random_grid(grid, btns))
+    file_menu.add_command(label='Random State', command=lambda: random_grid(grid, btns))
+    file_menu.add_command(label='Input State', command=lambda: input_grid(grid, btns))
 
     solve_menu = Menu(menu)
     menu.add_cascade(label='Solve', menu=solve_menu)
@@ -78,6 +87,44 @@ def reset(grid, btns):
 def random_grid(grid, btns):
     grid.new_grid()
     update_btns(grid, btns)
+
+
+def input_grid(grid, btns):
+    get_grid = Tk()
+
+    Label(get_grid, text='Enter A String of Numbers such as \'123456780\'').grid(row=0)
+    txt = Entry(get_grid)
+    txt.grid(row=1, sticky='nsew')
+    txt.focus_set()
+    btn = Button(get_grid, text='Submit',
+                 command=lambda form=get_grid, field=txt: save_string(form, field, grid, btns))
+    btn.grid(row=2, sticky='nsew')
+    get_grid.grid_columnconfigure(0, weight=1)
+    get_grid.mainloop()
+
+
+def save_string(form, field, grid, btns):
+    try:
+        string = field.get()
+        form.destroy()
+        grid.specific_grid(string)
+    except:
+        grid.reset()
+    update_btns(grid, btns)
+
+
+# Returns true if solvable, false otherwise
+# Algorithm adapted from https://math.stackexchange.com/questions/293527/how-to-check-if-a-8-puzzle-is-solvable
+def check_solvable(vals):
+    inversions = 0
+    flat = list(itertools.chain.from_iterable(vals))
+    for i in range(len(flat)):
+        if flat[i] != 0:
+            for j in range(i + 1, len(flat)):
+                if flat[j] != 0 and flat[i] > flat[j]:
+                    inversions += 1
+    return inversions % 2 == 0
+
 
 
 def update_btns(grid, btns):
@@ -124,6 +171,8 @@ def get_moves(vals):
 
 
 def bfs(grid, btns, root):
+    start_time = time.time()
+
     # Each node in the queue consists of 3 elements
     # 0: Current State
     # 1: Current Depth
@@ -138,12 +187,6 @@ def bfs(grid, btns, root):
     while len(queue) != 0:
         node = queue.pop(0)
         explored[str(node[0])] = node[2]
-        # '[[1, 2, 3], [4, 5, 6], [7, 8, 0]]'
-        # Check Goal State
-        # if node[0] == [[1, 2, 3],
-        #                [4, 5, 6],
-        #                [7, 8, 0]]:
-        #     break
         if node[0] == [[1, 2, 3],
                        [4, 5, 6],
                        [7, 8, 0]]:
@@ -160,16 +203,21 @@ def bfs(grid, btns, root):
                  [4, 5, 6],
                  [7, 8, 0]]]
     while solution[-1] is not None:
-        solution.append(explored[str(solution[-1])])
+            solution.append(explored[str(solution[-1])])
     solution.pop(-1)
+    end_time = time.time()
+    moves = len(solution) - 1
     display_output(grid, solution, btns, root)
+    messagebox.showinfo("Search Information", "Moves: " + str(moves) +
+                        "\nTime: " + str(end_time - start_time) +
+                        "\nTotal Nodes Visited: " + str(len(explored)))
 
 
 def display_output(grid, solution, btns, root):
     grid.vals = solution.pop(-1)
     update_btns(grid, btns)
     if len(solution) != 0:
-        root.after(500, lambda: display_output(grid, solution, btns, root))
+        root.after(300, lambda: display_output(grid, solution, btns, root))
 
 
 if __name__ == '__main__':
