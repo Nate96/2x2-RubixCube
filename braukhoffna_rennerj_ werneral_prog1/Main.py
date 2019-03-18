@@ -3,6 +3,7 @@ from tkinter import *
 import random
 from tkinter import messagebox
 import time
+import math
 
 
 class puzzle:
@@ -33,15 +34,12 @@ class puzzle:
         vals = [int(i) for i in list(grid_vals)]
         digits = [0, 1, 2, 3, 4, 5, 6, 7, 8]
         if not (all(elem in vals for elem in digits) and len(vals) == len(digits)):
-            messagebox.showinfo("Error", "Invalid input.")
-            raise Exception('Invalid Input')
+            raise Exception('Invalid Input.')
         self.vals = [x[:] for x in [[0] * 3] * 3]
         for i, j in itertools.product(range(3), repeat=2):
             self.vals[i][j] = vals[i * 3 + j]
         if not check_solvable(self.vals):
-            messagebox.showinfo("Error", "Puzzle is not solvable from that state.")
-            raise Exception('Invalid Input')
-
+            raise Exception('Puzzle is not solvable from that state.')
 
 
 def main():
@@ -108,7 +106,8 @@ def save_string(form, field, grid, btns):
         string = field.get()
         form.destroy()
         grid.specific_grid(string)
-    except:
+    except Exception as inst:
+        messagebox.showinfo("Error", inst.args[0])
         grid.reset()
     update_btns(grid, btns)
 
@@ -124,7 +123,6 @@ def check_solvable(vals):
                 if flat[j] != 0 and flat[i] > flat[j]:
                     inversions += 1
     return inversions % 2 == 0
-
 
 
 def update_btns(grid, btns):
@@ -171,13 +169,16 @@ def get_moves(vals):
 
 
 def bfs(grid, btns, root):
+    goal = [[1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 0]]
     start_time = time.time()
 
     # Each node in the queue consists of 3 elements
     # 0: Current State
     # 1: Current Depth
     # 2: Parent State
-    queue = [[grid.vals, 0, None]]
+    queue = [[grid.vals, None]]
 
     # Each node in the explored list consists of 2 elements
     # 0: State
@@ -186,10 +187,8 @@ def bfs(grid, btns, root):
 
     while len(queue) != 0:
         node = queue.pop(0)
-        explored[str(node[0])] = node[2]
-        if node[0] == [[1, 2, 3],
-                       [4, 5, 6],
-                       [7, 8, 0]]:
+        explored[str(node[0])] = node[1]
+        if node[0] == goal:
             break
 
         # Add children
@@ -197,11 +196,9 @@ def bfs(grid, btns, root):
         for move in moves:
             new_state = update_vals(node[0], move[0], move[1])
             if str(new_state) not in explored:
-                queue.append((new_state, node[1] + 1, node[0]))
+                queue.append((new_state, node[0]))
 
-    solution = [[[1, 2, 3],
-                 [4, 5, 6],
-                 [7, 8, 0]]]
+    solution = [goal]
     while solution[-1] is not None:
             solution.append(explored[str(solution[-1])])
     solution.pop(-1)
@@ -218,6 +215,16 @@ def display_output(grid, solution, btns, root):
     update_btns(grid, btns)
     if len(solution) != 0:
         root.after(300, lambda: display_output(grid, solution, btns, root))
+
+
+def manhattan_heuristic(grid):
+    total = 0
+    for val in range(9):
+        for row, col in itertools.product(range(3), repeat=2):
+            if grid[row][col] == val:
+                total += math.abs((val - 1) / 3 - row)
+                total += math.abs((val - 1) % 3 - col)
+                break
 
 
 if __name__ == '__main__':
