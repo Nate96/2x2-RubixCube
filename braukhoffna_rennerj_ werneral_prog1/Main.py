@@ -246,4 +246,4 @@ def display_output(grid, solution, btns, root):
 
 
 if __name__ == '__main__':
-    main()
+     main()
