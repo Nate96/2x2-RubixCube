@@ -39,7 +39,7 @@ class puzzle:
 
     # Returns true if solvable, false otherwise
     # Algorithm adapted from https://math.stackexchange.com/questions/293527/how-to-check-if-a-8-puzzle-is-solvable
-    def check_solvable(vals):
+    def check_solvable(self, vals):
         inversions = 0
         flat = list(itertools.chain.from_iterable(vals))
         for i in range(len(flat)):

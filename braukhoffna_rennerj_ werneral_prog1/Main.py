@@ -1,4 +1,5 @@
 import itertools
+from filecmp import cmp
 from tkinter import *
 from tkinter import messagebox
 import time
@@ -30,6 +31,7 @@ def main():
     solve_menu = Menu(menu)
     menu.add_cascade(label='Solve', menu=solve_menu)
     solve_menu.add_command(label='Breadth First Search', command=lambda: bfs(grid, btns, root))
+    solve_menu.add_command(label='A* Search', command=lambda: a_star(grid, btns, root))
 
     root.grid_rowconfigure(3, weight=1)
     root.grid_columnconfigure(3, weight=1)
@@ -162,11 +164,66 @@ def bfs(grid, btns, root):
                         "\nTotal Nodes Visited: " + str(len(explored)))
 
 
-def display_output(grid, solution, btns, root):
-    grid.vals = solution.pop(-1)
-    update_btns(grid, btns)
-    if len(solution) != 0:
-        root.after(300, lambda: display_output(grid, solution, btns, root))
+class Node:
+    grid = []
+    parent = None
+    g = 0
+    f = 0
+
+    def __init__(self, grid, parent, g):
+        self.grid = grid
+        self.parent = parent
+        self.g = g
+        self.f = 0
+
+    def calculate_heuristic(self):
+        if self.grid == [[1, 2, 3], [4, 5, 6], [7, 8, 0]]:
+            self.f = 0
+        else:
+            self.f = self.g + manhattan_heuristic(self.grid)
+
+
+def a_star(grid, btns, root):
+    goal = [[1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 0]]
+    start_time = time.time()
+
+    g = 0
+
+    # list contains - Node : (grid, parent grid, g)
+    open_list = [Node(grid.vals, None, g)]
+    traversed = {}
+
+    goal_node = None
+    while len(open_list) != 0:
+        # Sort open, pop the least f node, and append to traversed
+        open_list.sort(key=lambda y: y.f)
+        x = open_list.pop(0)
+        traversed[str(x.grid)] = x
+        if x.grid == goal:
+            goal_node = x
+            break
+
+        # Append children to open_list
+        children = get_moves(x.grid)
+        for child in children:
+            child_grid = update_vals(x.grid, child[0], child[1])
+            child_node = Node(child_grid, x, x.g + 1)
+            child_node.calculate_heuristic()
+            if str(child_grid) not in traversed:
+                open_list.append(child_node)
+
+    solution = []
+    while goal_node.parent is not None:
+        solution.append(goal_node.grid)
+        goal_node = goal_node.parent
+    end_time = time.time()
+    moves = len(solution)
+    display_output(grid, solution, btns, root)
+    messagebox.showinfo("Search Information", "Moves: " + str(moves) +
+                        "\nTime: " + str(end_time - start_time) +
+                        "\nTotal Nodes Visited: " + str(len(traversed)))
 
 
 def manhattan_heuristic(grid):
@@ -174,9 +231,18 @@ def manhattan_heuristic(grid):
     for val in range(9):
         for row, col in itertools.product(range(3), repeat=2):
             if grid[row][col] == val:
-                total += math.abs((val - 1) / 3 - row)
-                total += math.abs((val - 1) % 3 - col)
+                total += math.fabs((val - 1) / 3 - row)
+                total += math.fabs((val - 1) % 3 - col)
                 break
+
+    return total
+
+
+def display_output(grid, solution, btns, root):
+    grid.vals = solution.pop(-1)
+    update_btns(grid, btns)
+    if len(solution) != 0:
+        root.after(300, lambda: display_output(grid, solution, btns, root))
 
 
 if __name__ == '__main__':
