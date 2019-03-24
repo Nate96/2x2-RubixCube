@@ -220,6 +220,8 @@ def a_star(grid, btns, root):
         goal_node = goal_node.parent
     end_time = time.time()
     moves = len(solution)
+    if len(solution) == 0:
+        solution = [goal]
     display_output(grid, solution, btns, root)
     messagebox.showinfo("Search Information", "Moves: " + str(moves) +
                         "\nTime: " + str(end_time - start_time) +
