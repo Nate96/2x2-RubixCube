@@ -245,5 +245,69 @@ def display_output(grid, solution, btns, root):
         root.after(300, lambda: display_output(grid, solution, btns, root))
 
 
+def GreedyBFS(grid, btns, root):
+    goal = [[1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 0]]
+    start_time = time.time()
+
+    open_node = []
+    close_node = []
+
+    next_node = Node(grid.vals, None, 0)
+
+    while len(open_node) is not 0:
+        if next_node.grid == goal:
+            break
+
+        moves = get_moves(grid)
+        for move in moves:
+            open_node.insert(len(open_node) + 1, (Node(grid, next_node, calculate_heuristic_value(goal, move))))
+        open_node.sort(key=lambda x: Node.g)
+        close_node.insert(len(close_node) + 1, next_node)
+        next_node = open_node.pop(0)
+
+    move_set = [next_node]
+    while next_node.parent is not None:
+        move_set.append(next_node.grid)
+        next_node = next_node.parent
+    end_time = time.time()
+    display_output(grid, move_set, btns, root)
+    messagebox.showinfo("Search Information", "Moves: " + str(len(move_set)) +
+                        "\nTime: " + str(end_time - start_time) +
+                        "\nTotal Nodes Visited: " + str(len(close_node)))
+
+
+""""
+    add root to open
+    while root != goals
+        get moves
+        for (number of moves)
+            create neighbor for move x
+            if (neighbor.value < root.value)
+                add root to close
+                root = neighbor 
+                add root to open
+                break
+            else if (i = move length 
+                get node from open with least value
+                root = node    
+"""
+
+
+# calculate how many numbers are in the wrong spot in the grid
+def calculate_heuristic_value(goal, grid):
+    total = 0
+    for row, col in itertools.product(range(3), repeat=2):
+        if grid[row][col] != goal[row][col]:
+            total += 1
+    return total
+
+
+# create neighbor
+def create_neighbor(self, neighborNum, moves):
+    neighbor = Node(moves[neighborNum], self.root, self.calculate_heuristic_value(moves[neighborNum]))
+
+
 if __name__ == '__main__':
      main()
