@@ -254,13 +254,16 @@ def greedy_bfs(grid, btns, root):
             [7, 8, 0]]
     start_time = time.time()
 
-    open_node = []
-    close_node = []
+    open_node = list()
+    close_node = list()
 
     next_node = Node(grid.vals, None, 0)
     open_node.append(next_node)
 
     while len(open_node) != 0:
+        open_node.sort(key=lambda o: o.g, reverse=True)
+        next_node = open_node.pop(0)
+
         if next_node.grid == goal:
             close_node.insert(len(close_node) + 1, next_node)
             break
@@ -271,9 +274,8 @@ def greedy_bfs(grid, btns, root):
             child.g = calculate_heuristic_value(goal, child.grid)
             open_node.insert(len(open_node) + 1, child)
 
-        open_node.sort(key=lambda o: o.g, reverse=True)
-        close_node.insert(len(close_node) + 1, next_node)
-        next_node = open_node.pop(0)
+        if next_node.grid not in close_node:
+            close_node.insert(len(close_node) + 1, next_node)
 
     move_set = [next_node.grid]
     while next_node.parent is not None:
@@ -281,9 +283,6 @@ def greedy_bfs(grid, btns, root):
         next_node = next_node.parent
 
     end_time = time.time()
-
-    if len(move_set) == 0:
-        move_set = [goal]
 
     display_output(grid, move_set, btns, root)
     messagebox.showinfo("Search Information", "Moves: " + str(len(move_set)) +
