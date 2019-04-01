@@ -32,6 +32,7 @@ def main():
     menu.add_cascade(label='Solve', menu=solve_menu)
     solve_menu.add_command(label='Breadth First Search', command=lambda: bfs(grid, btns, root))
     solve_menu.add_command(label='A* Search', command=lambda: a_star(grid, btns, root))
+    solve_menu.add_command(label='Greedy Best First Search', command=lambda: greedy_bfs(grid, btns, root))
 
     root.grid_rowconfigure(3, weight=1)
     root.grid_columnconfigure(3, weight=1)
@@ -247,7 +248,7 @@ def display_output(grid, solution, btns, root):
         root.after(300, lambda: display_output(grid, solution, btns, root))
 
 
-def GreedyBFS(grid, btns, root):
+def greedy_bfs(grid, btns, root):
     goal = [[1, 2, 3],
             [4, 5, 6],
             [7, 8, 0]]
@@ -257,58 +258,46 @@ def GreedyBFS(grid, btns, root):
     close_node = []
 
     next_node = Node(grid.vals, None, 0)
+    open_node.append(next_node)
 
-    while len(open_node) is not 0:
+    while len(open_node) != 0:
         if next_node.grid == goal:
+            close_node.insert(len(close_node) + 1, next_node)
             break
 
-        moves = get_moves(grid)
+        moves = get_moves(next_node.grid)
         for move in moves:
-            open_node.insert(len(open_node) + 1, (Node(grid, next_node, calculate_heuristic_value(goal, move))))
-        open_node.sort(key=lambda x: Node.g)
+            child = Node(update_vals(next_node.grid, move[0], move[1]), next_node, 0)
+            child.g = calculate_heuristic_value(goal, child.grid)
+            open_node.insert(len(open_node) + 1, child)
+
+        open_node.sort(key=lambda o: o.g, reverse=True)
         close_node.insert(len(close_node) + 1, next_node)
         next_node = open_node.pop(0)
 
-    move_set = [next_node]
+    move_set = [next_node.grid]
     while next_node.parent is not None:
         move_set.append(next_node.grid)
         next_node = next_node.parent
+
     end_time = time.time()
+
+    if len(move_set) == 0:
+        move_set = [goal]
+
     display_output(grid, move_set, btns, root)
     messagebox.showinfo("Search Information", "Moves: " + str(len(move_set)) +
                         "\nTime: " + str(end_time - start_time) +
                         "\nTotal Nodes Visited: " + str(len(close_node)))
 
 
-""""
-    add root to open
-    while root != goals
-        get moves
-        for (number of moves)
-            create neighbor for move x
-            if (neighbor.value < root.value)
-                add root to close
-                root = neighbor 
-                add root to open
-                break
-            else if (i = move length 
-                get node from open with least value
-                root = node    
-"""
-
-
 # calculate how many numbers are in the wrong spot in the grid
 def calculate_heuristic_value(goal, grid):
     total = 0
     for row, col in itertools.product(range(3), repeat=2):
-        if grid[row][col] != goal[row][col]:
+        if grid[row][col] == goal[row][col]:
             total += 1
     return total
-
-
-# create neighbor
-def create_neighbor(self, neighborNum, moves):
-    neighbor = Node(moves[neighborNum], self.root, self.calculate_heuristic_value(moves[neighborNum]))
 
 
 if __name__ == '__main__':
