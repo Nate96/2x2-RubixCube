@@ -130,8 +130,7 @@ def bfs(grid, btns, root):
 
     # Each node in the queue consists of 3 elements
     # 0: Current State
-    # 1: Current Depth
-    # 2: Parent State
+    # 1: Parent State
     queue = [[grid.vals, None]]
 
     # Each node in the explored list consists of 2 elements
