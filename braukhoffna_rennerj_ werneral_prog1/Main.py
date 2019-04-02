@@ -299,6 +299,7 @@ def greedy_bfs(grid, btns, root):
     goal = [[1, 2, 3],
             [4, 5, 6],
             [7, 8, 0]]
+    max_time = 20
     start_time = time.time()
 
     open_node = list()
@@ -307,7 +308,7 @@ def greedy_bfs(grid, btns, root):
     next_node = Node(grid.vals, None, 0)
     open_node.append(next_node)
 
-    while len(open_node) != 0:
+    while time.time() - start_time < max_time:
         open_node.sort(key=lambda o: o.g, reverse=True)
         next_node = open_node.pop(0)
 
@@ -333,9 +334,12 @@ def greedy_bfs(grid, btns, root):
     end_time = time.time()
 
     display_output(grid, move_set, btns, root)
-    messagebox.showinfo("Search Information", "Moves: " + str(len(move_set)) +
-                        "\nTime: " + str(end_time - start_time) +
-                        "\nTotal Nodes Visited: " + str(len(close_node)))
+    if end_time - start_time < max_time:
+        messagebox.showinfo("Search Information", "Moves: " + str(len(move_set)) +
+                            "\nTime: " + str(end_time - start_time) +
+                            "\nTotal Nodes Visited: " + str(len(close_node)))
+    else:
+        messagebox.showinfo("Search Information", "Stuck in loop, did not find solution.")
 
 
 # calculate how many numbers are in the wrong spot in the grid
