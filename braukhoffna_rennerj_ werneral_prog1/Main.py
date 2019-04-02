@@ -280,7 +280,7 @@ def manhattan_heuristic(grid):
     for val in range(9):
         for row, col in itertools.product(range(3), repeat=2):
             if grid[row][col] == val:
-                total += math.fabs((val - 1) / 3 - row)
+                total += math.fabs(math.floor((val - 1) / 3) - row)
                 total += math.fabs((val - 1) % 3 - col)
                 break
 
