@@ -320,10 +320,11 @@ def greedy_bfs(grid, btns, root):
         for move in moves:
             child = Node(update_vals(next_node.grid, move[0], move[1]), next_node, 0)
             child.g = calculate_heuristic_value(goal, child.grid)
-            open_node.insert(len(open_node) + 1, child)
+            if child.grid not in close_node:
+                open_node.insert(len(open_node) + 1, child)
 
         if next_node.grid not in close_node:
-            close_node.insert(len(close_node) + 1, next_node)
+            close_node.insert(len(close_node) + 1, next_node.grid)
 
     move_set = [next_node.grid]
     while next_node.parent is not None:
@@ -332,8 +333,8 @@ def greedy_bfs(grid, btns, root):
 
     end_time = time.time()
 
-    display_output(grid, move_set, btns, root)
     if end_time - start_time < max_time:
+        display_output(grid, move_set, btns, root)
         messagebox.showinfo("Search Information", "Moves: " + str(len(move_set)) +
                             "\nTime: " + str(end_time - start_time) +
                             "\nTotal Nodes Visited: " + str(len(close_node)))
