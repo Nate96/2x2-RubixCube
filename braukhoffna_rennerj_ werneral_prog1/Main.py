@@ -307,7 +307,7 @@ def greedy_bfs(grid, btns, root):
     next_node = Node(grid.vals, None, 0)
     open_node.append(next_node)
 
-    while time.time() - start_time < max_time:
+    while len(open_node) != 0:
         open_node.sort(key=lambda o: o.g)
         next_node = open_node.pop(0)
 
