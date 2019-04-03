@@ -4,6 +4,7 @@ Members: Alex Werner, Jordan Renner, Nate Braukhoff
 BUILD
 1. Download Main.py from Canvas
 2. Open any application that can interpret Python
+3. Configure application to run any version greater than Python 3.0
 3. Run Main.py
 
 GUI
