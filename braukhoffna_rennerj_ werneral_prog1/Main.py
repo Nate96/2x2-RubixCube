@@ -308,7 +308,7 @@ def greedy_bfs(grid, btns, root):
     open_node.append(next_node)
 
     while time.time() - start_time < max_time:
-        open_node.sort(key=lambda o: o.g, reverse=True)
+        open_node.sort(key=lambda o: o.g)
         next_node = open_node.pop(0)
 
         if next_node.grid == goal:
@@ -346,7 +346,7 @@ def greedy_bfs(grid, btns, root):
 def calculate_heuristic_value(goal, grid):
     total = 0
     for row, col in itertools.product(range(3), repeat=2):
-        if grid[row][col] == goal[row][col]:
+        if grid[row][col] != goal[row][col]:
             total += 1
     return total
 
