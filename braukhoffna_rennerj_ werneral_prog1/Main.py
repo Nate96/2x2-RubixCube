@@ -130,8 +130,7 @@ def bfs(grid, btns, root):
 
     # Each node in the queue consists of 3 elements
     # 0: Current State
-    # 1: Current Depth
-    # 2: Parent State
+    # 1: Parent State
     queue = [[grid.vals, None]]
 
     # Each node in the explored list consists of 2 elements
@@ -281,7 +280,7 @@ def manhattan_heuristic(grid):
     for val in range(9):
         for row, col in itertools.product(range(3), repeat=2):
             if grid[row][col] == val:
-                total += math.fabs((val - 1) / 3 - row)
+                total += math.fabs(math.floor((val - 1) / 3) - row)
                 total += math.fabs((val - 1) % 3 - col)
                 break
 
@@ -299,7 +298,6 @@ def greedy_bfs(grid, btns, root):
     goal = [[1, 2, 3],
             [4, 5, 6],
             [7, 8, 0]]
-    max_time = 20
     start_time = time.time()
 
     open_node = list()
@@ -308,8 +306,8 @@ def greedy_bfs(grid, btns, root):
     next_node = Node(grid.vals, None, 0)
     open_node.append(next_node)
 
-    while time.time() - start_time < max_time:
-        open_node.sort(key=lambda o: o.g, reverse=True)
+    while len(open_node) != 0:
+        open_node.sort(key=lambda o: o.g)
         next_node = open_node.pop(0)
 
         if next_node.grid == goal:
@@ -321,10 +319,11 @@ def greedy_bfs(grid, btns, root):
         for move in moves:
             child = Node(update_vals(next_node.grid, move[0], move[1]), next_node, 0)
             child.g = calculate_heuristic_value(goal, child.grid)
-            open_node.insert(len(open_node) + 1, child)
+            if child.grid not in close_node:
+                open_node.insert(len(open_node) + 1, child)
 
         if next_node.grid not in close_node:
-            close_node.insert(len(close_node) + 1, next_node)
+            close_node.insert(len(close_node) + 1, next_node.grid)
 
     move_set = [next_node.grid]
     while next_node.parent is not None:
@@ -334,19 +333,16 @@ def greedy_bfs(grid, btns, root):
     end_time = time.time()
 
     display_output(grid, move_set, btns, root)
-    if end_time - start_time < max_time:
-        messagebox.showinfo("Search Information", "Moves: " + str(len(move_set)) +
-                            "\nTime: " + str(end_time - start_time) +
-                            "\nTotal Nodes Visited: " + str(len(close_node)))
-    else:
-        messagebox.showinfo("Search Information", "Stuck in loop, did not find solution.")
+    messagebox.showinfo("Search Information", "Moves: " + str(len(move_set)) +
+                        "\nTime: " + str(end_time - start_time) +
+                        "\nTotal Nodes Visited: " + str(len(close_node)))
 
 
 # calculate how many numbers are in the wrong spot in the grid
 def calculate_heuristic_value(goal, grid):
     total = 0
     for row, col in itertools.product(range(3), repeat=2):
-        if grid[row][col] == goal[row][col]:
+        if grid[row][col] != goal[row][col]:
             total += 1
     return total
 
