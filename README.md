@@ -1,1 +1,1 @@
-# 2x2-RubixCube
+# 8 Piece Puzzle
